@@ -14,6 +14,12 @@ export interface UserInterface {
     email: string;
     password: string;
 }
+ 
+export interface LoginResponseInterface{
+    token: string,
+    expiresAt: string,
+    user: UserInterface
+}
 
 const userSchema = new Schema<IUser>({
     name: {
