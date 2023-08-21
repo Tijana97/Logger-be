@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import * as dotenv from "dotenv";
+import { UserInterface } from "../modules/User/model";
 //import { UserInterface } from "../modules/User/model";
 dotenv.config();
 
@@ -9,14 +10,14 @@ const SECRET = `${process.env.SECRET}`;
 export interface AppRequest extends Request {
   user?: any;
 }
-/*
+
 export const generateToken = (user: UserInterface): string => {
   const token = jwt.sign(JSON.parse(JSON.stringify(user)), SECRET, {
     expiresIn: "24h",
   });
   return token;
 };
-*/
+
 
 export const authenticateJWT = (
   req: AppRequest,
