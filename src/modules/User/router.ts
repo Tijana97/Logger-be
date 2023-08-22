@@ -5,7 +5,7 @@ const userRouter = express.Router();
 
 // POST USER
 userRouter.post("/register", userController.createUser);
-userRouter.post("/login", userController.loginUser)
+userRouter.post("/login", userController.loginUser);
 
 // GET USER
 userRouter.get("/", authenticateJWT, userController.getAllUsers);
@@ -16,6 +16,5 @@ userRouter.put("/:userId", authenticateJWT, userController.updateUser);
 
 // DELETE USER
 userRouter.delete("/:userId", authenticateJWT, userController.deleteUser);
-
 
 export default userRouter;

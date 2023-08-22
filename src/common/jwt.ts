@@ -18,7 +18,6 @@ export const generateToken = (user: UserInterface): string => {
   return token;
 };
 
-
 export const authenticateJWT = (
   req: AppRequest,
   res: Response,

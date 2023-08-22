@@ -8,7 +8,6 @@ import router from "./modules/router";
 
 dotenv.config();
 
-
 const app = express();
 const PORT = "8080";
 
@@ -16,7 +15,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 
-const useHandler = (fn: any) => (req: AppRequest | Request, res: Response, next: NextFunction) => 
+const useHandler =
+  (fn: any) => (req: AppRequest | Request, res: Response, next: NextFunction) =>
     Promise.resolve(fn(req, res, next)).catch(next);
 
 app.use(function (
@@ -32,21 +32,19 @@ app.use(function (
 
 app.use("/", useHandler(router));
 
-
-const connectDB = async() => {
-    await mongoose.connect(`${process.env.DB_URI}`)
-}
-
-const startServer = async() => {
-    await connectDB();
-    app.listen(PORT, () => {console.log("Server Started")})
+const connectDB = async () => {
+  await mongoose.connect(`${process.env.DB_URI}`);
 };
 
-const startApp = async() => {
-    await startServer();
-}
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log("Server Started");
+  });
+};
 
-
+const startApp = async () => {
+  await startServer();
+};
 
 startApp();
-
