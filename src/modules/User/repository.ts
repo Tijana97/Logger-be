@@ -1,4 +1,5 @@
 import User, { UserInterface } from "./model";
+import Contract from "../Contract/model";
 
 const createUser = async (data: UserInterface): Promise<UserInterface> => {
   return await User.create(data);
@@ -24,7 +25,17 @@ const updateUser = async (
 };
 
 const deleteUser = async (userId: string): Promise<UserInterface | null> => {
-  return await User.findByIdAndDelete(userId);
+  try {
+    const response = await User.findByIdAndDelete(userId);
+    if (response) {
+      await Contract.deleteMany({ userId: userId });
+      return response;
+    } else {
+      return null;
+    }
+  } catch (error: any) {
+    return null;
+  }
 };
 
 export default {

@@ -1,4 +1,5 @@
 import Company, { CompanyInterface } from "./model";
+import Contract from "../Contract/model";
 
 const createCompany = async ({
   data,
@@ -42,7 +43,12 @@ const deleteCompany = async (
 ): Promise<CompanyInterface | null> => {
   try {
     const response = await Company.findByIdAndDelete(companyId);
-    return response;
+    if (response) {
+      await Contract.deleteMany({ companyId: companyId });
+      return response;
+    } else {
+      return null;
+    }
   } catch (error: any) {
     return null;
   }
