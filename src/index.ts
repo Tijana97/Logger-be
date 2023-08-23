@@ -5,6 +5,7 @@ import * as dotenv from "dotenv";
 import cors from "cors";
 import { AppRequest } from "./common/jwt";
 import router from "./modules/router";
+import logRepository from "./modules/LogDocs/repository";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ const startServer = async () => {
 
 const startApp = async () => {
   await startServer();
+  logRepository.getLogsByUser("64e4cbc847c5f4ec0de6c4f3");
 };
 
 startApp();
