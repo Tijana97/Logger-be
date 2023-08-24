@@ -2,6 +2,7 @@ import userRouter from "../User/router";
 import Contract, { ContractInterface } from "./model";
 import User from "../User/model";
 import Company from "../Company/model";
+import Log from "../LogDocs/model";
 
 const createContract = async (
   data: ContractInterface
@@ -65,7 +66,11 @@ const deleteContract = async (
   contractId: string
 ): Promise<ContractInterface | null> => {
   try {
-    return await Contract.findByIdAndDelete(contractId);
+    const response = await Contract.findByIdAndDelete(contractId);
+    if (response) {
+      await Log.deleteMany({ contractId: contractId });
+    }
+    return response;
   } catch (error: any) {
     return null;
   }
@@ -75,7 +80,14 @@ const deleteContractsByCompany = async (
   companyId: string
 ): Promise<boolean | null> => {
   try {
+    const contracts = await Contract.find({ companyId: companyId }, { _id: 1 });
+
     const response = await Contract.deleteMany({ companyId: companyId });
+    if (response) {
+      const logs = await Log.deleteMany({
+        contractId: { $in: contracts.map((el) => el._id) },
+      });
+    }
     return response.acknowledged;
   } catch (error: any) {
     return null;
@@ -86,7 +98,13 @@ const deleteContractsByUser = async (
   userId: string
 ): Promise<boolean | null> => {
   try {
+    const contracts = await Contract.find({ userId: userId }, { _id: 1 });
     const response = await Contract.deleteMany({ userId: userId });
+    if (response) {
+      const logs = await Log.deleteMany({
+        contractId: { $in: contracts.map((el) => el._id) },
+      });
+    }
     return response.acknowledged;
   } catch (error: any) {
     return null;

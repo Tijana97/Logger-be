@@ -53,12 +53,31 @@ const getLogsByCompany = async (req: AppRequest, res: Response) => {
 };
 
 const getLogsByDate = async (req: AppRequest, res: Response) => {
-  const { startDate, endDate } = req.params;
-  const response = await logService.getLogsByDate(startDate, endDate);
+  const data = req.query;
+  if (data.startDate && data.endDate && typeof data.contractId === "string") {
+    const response = await logService.getLogsByDate(
+      new Date(data.startDate as string).toISOString(),
+      new Date(data.endDate as string).toISOString(),
+      data.contractId
+    );
+    if (response) {
+      res.send(response);
+    } else {
+      res.status(404).send("Contract Not Found.");
+    }
+  } else {
+    res.status(404).send("Contract Not Found.");
+  }
+};
+
+const updateLog = async (req: AppRequest, res: Response) => {
+  const { logId } = req.params;
+  const data = req.body;
+  const response = await logService.updateLog(logId, data);
   if (response) {
     res.send(response);
   } else {
-    res.status(404).send("Logs Not Found.");
+    res.status(404).send("Log Not Found.");
   }
 };
 
@@ -92,6 +111,16 @@ const deleteLogsByCompany = async (req: AppRequest, res: Response) => {
   }
 };
 
+const deleteLogsByContract = async (req: AppRequest, res: Response) => {
+  const { contractId } = req.params;
+  const response = await logService.deleteLogsByContract(contractId);
+  if (response) {
+    res.send(response);
+  } else {
+    res.status(404).send("Contract Not Found.");
+  }
+};
+
 export default {
   createLog,
   getLogById,
@@ -99,7 +128,9 @@ export default {
   getLogsByUser,
   getLogsByCompany,
   getLogsByDate,
+  updateLog,
   deleteLogById,
   deleteLogsByUser,
   deleteLogsByCompany,
+  deleteLogsByContract,
 };

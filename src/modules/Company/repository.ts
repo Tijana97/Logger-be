@@ -1,5 +1,6 @@
 import Company, { CompanyInterface } from "./model";
 import Contract from "../Contract/model";
+import Log from "../LogDocs/model";
 
 const createCompany = async ({
   data,
@@ -44,6 +45,13 @@ const deleteCompany = async (
   try {
     const response = await Company.findByIdAndDelete(companyId);
     if (response) {
+      const contracts = await Contract.find(
+        { companyId: companyId },
+        { _id: 1 }
+      );
+      const logs = await Log.deleteMany({
+        contractId: { $in: contracts.map((el) => el._id) },
+      });
       await Contract.deleteMany({ companyId: companyId });
       return response;
     } else {

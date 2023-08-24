@@ -1,5 +1,6 @@
 import User, { UserInterface } from "./model";
 import Contract from "../Contract/model";
+import Log from "../LogDocs/model";
 
 const createUser = async (data: UserInterface): Promise<UserInterface> => {
   return await User.create(data);
@@ -28,6 +29,10 @@ const deleteUser = async (userId: string): Promise<UserInterface | null> => {
   try {
     const response = await User.findByIdAndDelete(userId);
     if (response) {
+      const contracts = await Contract.find({ userId: userId }, { _id: 1 });
+      const logs = await Log.deleteMany({
+        contractId: { $in: contracts.map((el) => el._id) },
+      });
       await Contract.deleteMany({ userId: userId });
       return response;
     } else {

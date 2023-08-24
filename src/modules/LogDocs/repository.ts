@@ -85,22 +85,47 @@ const getLogsByCompany = async (
 
 const getLogsByDate = async (
   startDate: string,
-  endDate: string
+  endDate: string,
+  contractId: string
 ): Promise<LogInterface[] | null> => {
-  const dateStart = new Date(startDate);
-  dateStart.setUTCHours(0, 0, 0, 0);
-  const dateEnd = new Date(endDate);
-  dateEnd.setUTCHours(23, 59, 59, 999);
-  try {
-    return await Log.find({
-      date: {
-        $gte: dateStart,
-        $lte: dateEnd,
-      },
-    });
-  } catch (error: any) {
-    return null;
+  const contractExists = await Contract.findById(contractId);
+  if (contractExists) {
+    const dateStart = new Date(startDate);
+    dateStart.setUTCHours(0, 0, 0, 0);
+    const dateEnd = new Date(endDate);
+    dateEnd.setUTCHours(23, 59, 59, 999);
+    try {
+      return await Log.find({
+        $and: [
+          {
+            date: {
+              $gte: dateStart,
+              $lte: dateEnd,
+            },
+          },
+          { contractId: contractId },
+        ],
+      });
+    } catch (error: any) {
+      return null;
+    }
   }
+  return null;
+};
+
+const updateLog = async (
+  logId: string,
+  data: Partial<LogInterface>
+): Promise<LogInterface | null> => {
+  const { description } = data;
+  if (description) {
+    try {
+      return await Log.findByIdAndUpdate(logId, { description }, { new: true });
+    } catch (error: any) {
+      return null;
+    }
+  }
+  return null;
 };
 
 const deleteLogById = async (logId: string): Promise<LogInterface | null> => {
@@ -135,6 +160,17 @@ const deleteLogsByCompany = async (companyId: string) => {
   return null;
 };
 
+const deleteLogsByContract = async (
+  contractId: string
+): Promise<boolean | null> => {
+  try {
+    const logs = await Log.deleteMany({ contractId: contractId });
+    return logs.acknowledged;
+  } catch (error: any) {
+    return null;
+  }
+};
+
 export default {
   createLog,
   getLogById,
@@ -142,7 +178,9 @@ export default {
   getLogsByUser,
   getLogsByCompany,
   getLogsByDate,
+  updateLog,
   deleteLogById,
   deleteLogsByUser,
   deleteLogsByCompany,
+  deleteLogsByContract,
 };

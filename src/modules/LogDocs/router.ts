@@ -24,13 +24,10 @@ logRouter.get(
   logController.getLogsByCompany
 );
 
-logRouter.get(
-  "/date/:startDate/:endDate",
-  authenticateJWT,
-  logController.getLogsByDate
-);
+logRouter.get("/date", authenticateJWT, logController.getLogsByDate);
 
 // PUT LOG
+logRouter.put("/:logId", authenticateJWT, logController.updateLog);
 
 // DELETE LOG
 logRouter.delete("by_id/:logId", authenticateJWT, logController.deleteLogById);
@@ -41,6 +38,12 @@ logRouter.delete(
   "/company/:companId",
   authenticateJWT,
   logController.deleteLogsByCompany
+);
+
+logRouter.delete(
+  "/contract/:contractId",
+  authenticateJWT,
+  logController.deleteLogsByContract
 );
 
 export default logRouter;

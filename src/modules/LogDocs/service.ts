@@ -33,9 +33,17 @@ const getLogsByCompany = async (
 
 const getLogsByDate = async (
   startDate: string,
-  endDate: string
+  endDate: string,
+  contractId: string
 ): Promise<LogInterface[] | null> => {
-  return await logRepository.getLogsByDate(startDate, endDate);
+  return await logRepository.getLogsByDate(startDate, endDate, contractId);
+};
+
+const updateLog = async (
+  logId: string,
+  data: Partial<LogInterface>
+): Promise<LogInterface | null> => {
+  return await logRepository.updateLog(logId, data);
 };
 
 const deleteLogById = async (logId: string): Promise<LogInterface | null> => {
@@ -52,6 +60,12 @@ const deleteLogsByCompany = async (
   return await logRepository.deleteLogsByCompany(companyId);
 };
 
+const deleteLogsByContract = async (
+  contractId: string
+): Promise<boolean | null> => {
+  return await logRepository.deleteLogsByContract(contractId);
+};
+
 export default {
   createLog,
   getLogById,
@@ -59,7 +73,9 @@ export default {
   getLogsByUser,
   getLogsByCompany,
   getLogsByDate,
+  updateLog,
   deleteLogById,
   deleteLogsByUser,
   deleteLogsByCompany,
+  deleteLogsByContract,
 };
