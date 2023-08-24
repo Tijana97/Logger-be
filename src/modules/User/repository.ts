@@ -1,6 +1,6 @@
 import User, { UserInterface } from "./model";
 import Contract from "../Contract/model";
-import Log from "../LogDocs/model";
+import Log from "../LogDoc/model";
 
 const createUser = async (data: UserInterface): Promise<UserInterface> => {
   return await User.create(data);

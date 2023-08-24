@@ -2,7 +2,7 @@ import userRouter from "../User/router";
 import Contract, { ContractInterface } from "./model";
 import User from "../User/model";
 import Company from "../Company/model";
-import Log from "../LogDocs/model";
+import Log from "../LogDoc/model";
 
 const createContract = async (
   data: ContractInterface

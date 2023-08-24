@@ -1,6 +1,6 @@
 import Company, { CompanyInterface } from "./model";
 import Contract from "../Contract/model";
-import Log from "../LogDocs/model";
+import Log from "../LogDoc/model";
 
 const createCompany = async ({
   data,

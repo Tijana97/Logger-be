@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 import cors from "cors";
 import { AppRequest } from "./common/jwt";
 import router from "./modules/router";
-import logRepository from "./modules/LogDocs/repository";
+import logRepository from "./modules/LogDoc/repository";
 
 dotenv.config();
 
