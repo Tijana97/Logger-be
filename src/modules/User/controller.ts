@@ -6,7 +6,11 @@ import { compare } from "bcrypt";
 const createUser = async (req: AppRequest, res: Response) => {
   const data = req.body;
   const response = await userService.createUser({ data });
-  res.send(response);
+  if (response) {
+    res.send(response);
+  } else {
+    res.status(404).send("User Already Exists.");
+  }
 };
 
 const loginUser = async (req: AppRequest, res: Response) => {

@@ -9,16 +9,19 @@ const createUser = async ({
   data,
 }: {
   data: UserInterface;
-}): Promise<UserInterface> => {
+}): Promise<UserInterface | null> => {
   const hashedPassword = await bcrypt.hash(data.password, saltRounds);
   const user = await userRepository.createUser({
     ...data,
     email: data.email.toLowerCase(),
     password: hashedPassword,
   });
-  const { password, ...basicInfo } = JSON.parse(JSON.stringify(user));
-
-  return basicInfo;
+  if (user) {
+    const { password, ...basicInfo } = JSON.parse(JSON.stringify(user));
+    return basicInfo;
+  } else {
+    return null;
+  }
 };
 
 const loginUser = async ({

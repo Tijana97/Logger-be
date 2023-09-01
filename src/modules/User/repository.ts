@@ -2,12 +2,22 @@ import User, { UserInterface } from "./model";
 import Contract from "../Contract/model";
 import Log from "../LogDoc/model";
 
-const createUser = async (data: UserInterface): Promise<UserInterface> => {
-  return await User.create(data);
+const createUser = async (
+  data: UserInterface
+): Promise<UserInterface | null> => {
+  try {
+    return await User.create(data);
+  } catch (error: any) {
+    return null;
+  }
 };
 
 const loginUser = async (email: string): Promise<UserInterface | null> => {
-  return await User.findOne({ email: email });
+  try {
+    return await User.findOne({ email: email });
+  } catch (error: any) {
+    return null;
+  }
 };
 
 const getAllUsers = async (): Promise<UserInterface[]> => {
