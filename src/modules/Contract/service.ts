@@ -15,9 +15,17 @@ const getContractById = async (
   return await contractRepository.getContractById(contractId);
 };
 const getContractsByUser = async (
-  userId: string
+  userId: string,
+  skip: number,
+  dateStart: number,
+  company: number
 ): Promise<ContractInterface[] | null> => {
-  return await contractRepository.getContractsByUser(userId);
+  return await contractRepository.getContractsByUser(
+    userId,
+    skip,
+    dateStart,
+    company
+  );
 };
 
 const updateContract = async (

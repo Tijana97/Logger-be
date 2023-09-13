@@ -24,7 +24,13 @@ const getContractById = async (req: AppRequest, res: Response) => {
 
 const getContractsByUser = async (req: AppRequest, res: Response) => {
   const { _id: userId } = req.user;
-  const response = await contractService.getContractsByUser(userId);
+  const { skip, dateStart, company } = req.query;
+  const response = await contractService.getContractsByUser(
+    userId,
+    Number(skip),
+    Number(dateStart),
+    Number(company)
+  );
   if (response) {
     res.send(response);
   } else {

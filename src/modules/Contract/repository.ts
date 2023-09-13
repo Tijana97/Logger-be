@@ -1,8 +1,12 @@
 import userRouter from "../User/router";
-import Contract, { ContractInterface } from "./model";
+import Contract, {
+  ContractInterface,
+  ExpandedContractInterface,
+} from "./model";
 import User from "../User/model";
 import Company from "../Company/model";
 import Log from "../LogDoc/model";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const createContract = async (
   data: ContractInterface
@@ -35,19 +39,88 @@ const getContractById = async (
 };
 
 const getContractsByUser = async (
-  userId: string
-): Promise<ContractInterface[] | null> => {
+  userId: string,
+  skip: number,
+  dateStart: number,
+  company: number
+): Promise<ExpandedContractInterface[] | null> => {
+  const companyName = company === 0 ? 1 : company;
+  const startDate = dateStart === 0 ? -1 : dateStart;
   const userExists = await User.findById(userId);
   if (userExists) {
     try {
-      return await Contract.find({ userId: userId });
+      const results = await Contract.aggregate(
+        [
+          {
+            $project: {
+              _id: Number(0),
+              contracts: "$$ROOT",
+            },
+          },
+          {
+            $lookup: {
+              localField: "contracts.companyId",
+              from: "companies",
+              foreignField: "_id",
+              as: "companies",
+            },
+          },
+          {
+            $unwind: {
+              path: "$companies",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: {
+              "contracts.userId": userId,
+            },
+          },
+          {
+            $project: {
+              "contracts._id": "$contracts._id",
+              "contracts.userId": "$contracts.userId",
+              "contracts.companyId": "$contracts.companyId",
+              "contracts.companyName": "$companies.name",
+              "contracts.hourlyRate": "$contracts.hourlyRate",
+              "contracts.startDate": "$contracts.startDate",
+              "contracts.endDate": "$contracts.endDate",
+              _id: Number(0),
+            },
+          },
+          {
+            $sort: {
+              //@ts-ignore
+              "contracts.startDate": startDate,
+              //@ts-ignore
+              "contracts.companyName": companyName,
+            }, // Sort by startDate in ascending order
+          },
+          {
+            $skip: skip, // Number of documents to skip (adjust as needed)
+          },
+          {
+            $limit: 2, // Number of documents to return (adjust as needed)
+          },
+        ],
+        {
+          allowDiskUse: true,
+        }
+      );
+
+      if (results) {
+        console.error("Aggregation results:", results);
+        return results; // Extract the documents from the paginated result
+      }
+
+      return null;
     } catch (error) {
+      console.error("Error:", error);
       return null;
     }
   }
   return null;
 };
-
 const updateContract = async (
   contractId: string,
   data: Partial<ContractInterface>

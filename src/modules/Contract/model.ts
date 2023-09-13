@@ -1,8 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 export interface IContract extends Document {
   userId: string;
-  companyId: string;
+  companyId: Schema.Types.ObjectId;
   hourlyRate: number;
   startDate: Date;
   endDate: Date;
@@ -11,7 +12,17 @@ export interface IContract extends Document {
 export interface ContractInterface {
   _id?: string | Schema.Types.ObjectId;
   userId: string;
-  companyId: string;
+  companyId: Schema.Types.ObjectId;
+  hourlyRate: number;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface ExpandedContractInterface {
+  _id?: string | Schema.Types.ObjectId;
+  userId: string;
+  companyId: Schema.Types.ObjectId;
+  companyName: string;
   hourlyRate: number;
   startDate: Date;
   endDate: Date;
@@ -23,7 +34,7 @@ const contractSchema = new Schema<IContract>({
     required: true,
   },
   companyId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     required: true,
   },
   hourlyRate: {
@@ -40,6 +51,7 @@ const contractSchema = new Schema<IContract>({
   },
 });
 
+contractSchema.plugin(mongoosePaginate);
 const Contract = mongoose.model<IContract>("Contract", contractSchema);
 
 export default Contract;
