@@ -17,7 +17,7 @@ const createContract = async (
     const exists = await Contract.findOne({
       $and: [{ userId: data.userId }, { companyId: data.companyId }],
     });
-    if (!exists) {
+    if (!exists || !exists.isActive) {
       try {
         return await Contract.create(data);
       } catch (error: any) {
@@ -85,6 +85,7 @@ const getContractsByUser = async (
               "contracts.hourlyRate": "$contracts.hourlyRate",
               "contracts.startDate": "$contracts.startDate",
               "contracts.endDate": "$contracts.endDate",
+              "contracts.isActive": "$contracts.isActive",
               _id: Number(0),
             },
           },

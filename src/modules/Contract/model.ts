@@ -7,6 +7,7 @@ export interface IContract extends Document {
   hourlyRate: number;
   startDate: Date;
   endDate: Date;
+  isActive: Boolean;
 }
 
 export interface ContractInterface {
@@ -16,6 +17,7 @@ export interface ContractInterface {
   hourlyRate: number;
   startDate: Date;
   endDate: Date;
+  isActive: Boolean;
 }
 
 export interface ExpandedContractInterface {
@@ -26,6 +28,7 @@ export interface ExpandedContractInterface {
   hourlyRate: number;
   startDate: Date;
   endDate: Date;
+  isActive: Boolean;
 }
 
 const contractSchema = new Schema<IContract>({
@@ -48,6 +51,11 @@ const contractSchema = new Schema<IContract>({
   endDate: {
     type: Date,
     required: false,
+  },
+  isActive: {
+    type: Boolean,
+    required: true,
+    default: true,
   },
 });
 
