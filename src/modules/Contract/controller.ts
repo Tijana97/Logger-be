@@ -24,17 +24,56 @@ const getContractById = async (req: AppRequest, res: Response) => {
 
 const getContractsByUser = async (req: AppRequest, res: Response) => {
   const { _id: userId } = req.user;
-  const { skip, dateStart, company } = req.query;
-  const response = await contractService.getContractsByUser(
-    userId,
-    Number(skip),
-    Number(dateStart),
-    Number(company)
-  );
-  if (response) {
-    res.send(response);
+  const { skip, dateStart, company, status } = req.query;
+  const dateFilter = dateStart ? dateStart : null;
+  const companyFilter = company ? company : null;
+  const statusFilter = status ? status : null;
+  console.log("Prije ULASKA", dateFilter, companyFilter, statusFilter);
+  if (companyFilter) {
+    const response = await contractService.getContractsByUserWithCompanyFilter(
+      userId,
+      Number(skip),
+      Number(company)
+    );
+    if (response) {
+      res.send(response);
+    } else {
+      res.status(404).send("User Doesn't Exist");
+    }
+  } else if (dateFilter) {
+    console.log("HALOOO", dateFilter);
+    const response = await contractService.getContractsByUserWithDateFilter(
+      userId,
+      Number(skip),
+      Number(dateStart)
+    );
+
+    if (response) {
+      res.send(response);
+    } else {
+      res.status(404).send("User Doesn't Exist");
+    }
+  } else if (statusFilter) {
+    const response = await contractService.getContractsByUserWithStatusFilter(
+      userId,
+      Number(skip),
+      Number(status)
+    );
+    if (response) {
+      res.send(response);
+    } else {
+      res.status(404).send("User Doesn't Exist");
+    }
   } else {
-    res.status(404).send("User Doesn't Exist");
+    const response = await contractService.getContractsByUser(
+      userId,
+      Number(skip)
+    );
+    if (response) {
+      res.send(response);
+    } else {
+      res.status(404).send("User Doesn't Exist");
+    }
   }
 };
 

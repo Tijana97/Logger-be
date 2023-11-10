@@ -19,6 +19,10 @@ export interface ContractInterface {
   endDate: Date;
   isActive: Boolean;
 }
+export interface ExpandedContractInterfaceArray {
+  results: Array<ExpandedContractInterface>;
+  totalCount: Number;
+}
 
 export interface ExpandedContractInterface {
   _id?: string | Schema.Types.ObjectId;
@@ -51,6 +55,7 @@ const contractSchema = new Schema<IContract>({
   endDate: {
     type: Date,
     required: false,
+    default: null,
   },
   isActive: {
     type: Boolean,

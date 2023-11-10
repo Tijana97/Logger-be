@@ -1,12 +1,10 @@
-import userRouter from "../User/router";
 import Contract, {
   ContractInterface,
-  ExpandedContractInterface,
+  ExpandedContractInterfaceArray,
 } from "./model";
 import User from "../User/model";
 import Company from "../Company/model";
 import Log from "../LogDoc/model";
-import mongoosePaginate from "mongoose-paginate-v2";
 
 const createContract = async (
   data: ContractInterface
@@ -40,12 +38,8 @@ const getContractById = async (
 
 const getContractsByUser = async (
   userId: string,
-  skip: number,
-  dateStart: number,
-  company: number
-): Promise<ExpandedContractInterface[] | null> => {
-  const companyName = company === 0 ? 1 : company;
-  const startDate = dateStart === 0 ? -1 : dateStart;
+  skip: number
+): Promise<ExpandedContractInterfaceArray | null> => {
   const userExists = await User.findById(userId);
   if (userExists) {
     try {
@@ -90,18 +84,21 @@ const getContractsByUser = async (
             },
           },
           {
-            $sort: {
-              //@ts-ignore
-              "contracts.startDate": startDate,
-              //@ts-ignore
-              "contracts.companyName": companyName,
-            }, // Sort by startDate in ascending order
-          },
-          {
-            $skip: skip, // Number of documents to skip (adjust as needed)
-          },
-          {
-            $limit: 2, // Number of documents to return (adjust as needed)
+            $facet: {
+              results: [
+                {
+                  $skip: skip,
+                },
+                {
+                  $limit: 5,
+                },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
           },
         ],
         {
@@ -109,9 +106,16 @@ const getContractsByUser = async (
         }
       );
 
-      if (results) {
-        console.error("Aggregation results:", results);
-        return results; // Extract the documents from the paginated result
+      const formattedResults = {
+        results: results[0].results,
+        totalCount: results[0].totalCount[0]
+          ? results[0].totalCount[0].count
+          : 0,
+      };
+
+      if (formattedResults) {
+        console.error("Aggregation results:", formattedResults);
+        return formattedResults; // Extract the documents from the paginated result
       }
 
       return null;
@@ -122,6 +126,303 @@ const getContractsByUser = async (
   }
   return null;
 };
+
+const getContractsByUserWithCompanyFilter = async (
+  userId: string,
+  skip: number,
+  company: number
+): Promise<ExpandedContractInterfaceArray | null> => {
+  const companyName = company === 0 ? -1 : 1;
+  const userExists = await User.findById(userId);
+  if (userExists) {
+    try {
+      const results = await Contract.aggregate(
+        [
+          {
+            $project: {
+              _id: Number(0),
+              contracts: "$$ROOT",
+            },
+          },
+          {
+            $lookup: {
+              localField: "contracts.companyId",
+              from: "companies",
+              foreignField: "_id",
+              as: "companies",
+            },
+          },
+          {
+            $unwind: {
+              path: "$companies",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: {
+              "contracts.userId": userId,
+            },
+          },
+          {
+            $project: {
+              "contracts._id": "$contracts._id",
+              "contracts.userId": "$contracts.userId",
+              "contracts.companyId": "$contracts.companyId",
+              "contracts.companyName": "$companies.name",
+              "contracts.hourlyRate": "$contracts.hourlyRate",
+              "contracts.startDate": "$contracts.startDate",
+              "contracts.endDate": "$contracts.endDate",
+              "contracts.isActive": "$contracts.isActive",
+              _id: Number(0),
+            },
+          },
+          {
+            $facet: {
+              results: [
+                {
+                  $sort: {
+                    "contracts.companyName": companyName,
+                  }, // Sort by startDate in ascending order
+                },
+                {
+                  $skip: skip,
+                },
+                {
+                  $limit: 5,
+                },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ],
+        {
+          allowDiskUse: true,
+        }
+      );
+
+      const formattedResults = {
+        results: results[0].results,
+        totalCount: results[0].totalCount[0]
+          ? results[0].totalCount[0].count
+          : 0,
+      };
+
+      if (formattedResults) {
+        console.error("Aggregation results:", formattedResults);
+        return formattedResults; // Extract the documents from the paginated result
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+const getContractsByUserWithDateFilter = async (
+  userId: string,
+  skip: number,
+  dateStart: number
+): Promise<ExpandedContractInterfaceArray | null> => {
+  const startDate = dateStart === 0 ? -1 : 1;
+  console.log("STARI DATE", dateStart);
+  console.log("NOVI DATE", startDate);
+  const userExists = await User.findById(userId);
+  if (userExists) {
+    try {
+      const results = await Contract.aggregate(
+        [
+          {
+            $project: {
+              _id: Number(0),
+              contracts: "$$ROOT",
+            },
+          },
+          {
+            $lookup: {
+              localField: "contracts.companyId",
+              from: "companies",
+              foreignField: "_id",
+              as: "companies",
+            },
+          },
+          {
+            $unwind: {
+              path: "$companies",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: {
+              "contracts.userId": userId,
+            },
+          },
+          {
+            $project: {
+              "contracts._id": "$contracts._id",
+              "contracts.userId": "$contracts.userId",
+              "contracts.companyId": "$contracts.companyId",
+              "contracts.companyName": "$companies.name",
+              "contracts.hourlyRate": "$contracts.hourlyRate",
+              "contracts.startDate": "$contracts.startDate",
+              "contracts.endDate": "$contracts.endDate",
+              "contracts.isActive": "$contracts.isActive",
+              _id: Number(0),
+            },
+          },
+          {
+            $facet: {
+              results: [
+                {
+                  $sort: {
+                    "contracts.startDate": startDate,
+                  }, // Sort by startDate in ascending order
+                },
+                {
+                  $skip: skip,
+                },
+                {
+                  $limit: 5,
+                },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ],
+        {
+          allowDiskUse: true,
+        }
+      );
+
+      const formattedResults = {
+        results: results[0].results,
+        totalCount: results[0].totalCount[0]
+          ? results[0].totalCount[0].count
+          : 0,
+      };
+
+      if (formattedResults) {
+        console.error("Aggregation results:", formattedResults);
+        return formattedResults; // Extract the documents from the paginated result
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+const getContractsByUserWithStatusFilter = async (
+  userId: string,
+  skip: number,
+  status: number
+): Promise<ExpandedContractInterfaceArray | null> => {
+  const isActive = status === 0 ? -1 : 1;
+  const userExists = await User.findById(userId);
+  if (userExists) {
+    try {
+      const results = await Contract.aggregate(
+        [
+          {
+            $project: {
+              _id: Number(0),
+              contracts: "$$ROOT",
+            },
+          },
+          {
+            $lookup: {
+              localField: "contracts.companyId",
+              from: "companies",
+              foreignField: "_id",
+              as: "companies",
+            },
+          },
+          {
+            $unwind: {
+              path: "$companies",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $match: {
+              "contracts.userId": userId,
+            },
+          },
+          {
+            $project: {
+              "contracts._id": "$contracts._id",
+              "contracts.userId": "$contracts.userId",
+              "contracts.companyId": "$contracts.companyId",
+              "contracts.companyName": "$companies.name",
+              "contracts.hourlyRate": "$contracts.hourlyRate",
+              "contracts.startDate": "$contracts.startDate",
+              "contracts.endDate": "$contracts.endDate",
+              "contracts.isActive": "$contracts.isActive",
+              _id: Number(0),
+            },
+          },
+          {
+            $facet: {
+              results: [
+                {
+                  $sort: {
+                    "contracts.isActive": isActive,
+                  }, // Sort by startDate in ascending order
+                },
+                {
+                  $skip: skip,
+                },
+                {
+                  $limit: 5,
+                },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ],
+        {
+          allowDiskUse: true,
+        }
+      );
+
+      const formattedResults = {
+        results: results[0].results,
+        totalCount: results[0].totalCount[0]
+          ? results[0].totalCount[0].count
+          : 0,
+      };
+
+      if (formattedResults) {
+        console.error("Aggregation results:", formattedResults);
+        return formattedResults; // Extract the documents from the paginated result
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
 const updateContract = async (
   contractId: string,
   data: Partial<ContractInterface>
@@ -193,4 +494,7 @@ export default {
   deleteContract,
   deleteContractsByCompany,
   deleteContractsByUser,
+  getContractsByUserWithCompanyFilter,
+  getContractsByUserWithDateFilter,
+  getContractsByUserWithStatusFilter,
 };

@@ -1,4 +1,8 @@
-import { ContractInterface } from "./model";
+import {
+  ContractInterface,
+  ExpandedContractInterface,
+  ExpandedContractInterfaceArray,
+} from "./model";
 import contractRepository from "./repository";
 
 const createContract = async ({
@@ -16,15 +20,44 @@ const getContractById = async (
 };
 const getContractsByUser = async (
   userId: string,
+  skip: number
+): Promise<ExpandedContractInterfaceArray | null> => {
+  return await contractRepository.getContractsByUser(userId, skip);
+};
+
+const getContractsByUserWithCompanyFilter = async (
+  userId: string,
   skip: number,
-  dateStart: number,
   company: number
-): Promise<ContractInterface[] | null> => {
-  return await contractRepository.getContractsByUser(
+): Promise<ExpandedContractInterfaceArray | null> => {
+  return await contractRepository.getContractsByUserWithCompanyFilter(
     userId,
     skip,
-    dateStart,
     company
+  );
+};
+
+const getContractsByUserWithDateFilter = async (
+  userId: string,
+  skip: number,
+  date: number
+): Promise<ExpandedContractInterfaceArray | null> => {
+  return await contractRepository.getContractsByUserWithDateFilter(
+    userId,
+    skip,
+    date
+  );
+};
+
+const getContractsByUserWithStatusFilter = async (
+  userId: string,
+  skip: number,
+  status: number
+): Promise<ExpandedContractInterfaceArray | null> => {
+  return await contractRepository.getContractsByUserWithStatusFilter(
+    userId,
+    skip,
+    status
   );
 };
 
@@ -61,4 +94,7 @@ export default {
   deleteContract,
   deleteContractsByCompany,
   deleteContractsByUser,
+  getContractsByUserWithCompanyFilter,
+  getContractsByUserWithDateFilter,
+  getContractsByUserWithStatusFilter,
 };
